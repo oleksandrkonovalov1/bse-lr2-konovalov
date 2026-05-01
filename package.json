@@ -1,0 +1,16 @@
+{
+  "name": "bse-lr2-konovalov",
+  "version": "1.0.0",
+  "description": "Лабораторна робота №2 — Моделювання системи (UML)",
+  "scripts": {
+    "export:use-case": "mmdc -i diagrams/use-case.mmd -o diagrams/images/use-case.png -t default -b white -w 1600",
+    "export:class": "mmdc -i diagrams/class.mmd -o diagrams/images/class.png -t default -b white -w 2400",
+    "export:sequence": "mmdc -i diagrams/sequence.mmd -o diagrams/images/sequence.png -t default -b white -w 1600",
+    "export:all": "npm run export:use-case && npm run export:class && npm run export:sequence"
+  },
+  "author": "Oleksandr Konovalov",
+  "license": "MIT",
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.2"
+  }
+}
