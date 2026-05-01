@@ -1,0 +1,44 @@
+sequenceDiagram
+    actor User as Користувач
+    participant CG as CitationGenerator
+    participant SR as SearchRequest
+    participant CP as CrossrefProvider
+    participant OLP as OpenLibraryProvider
+    participant CS as CitationStyle
+    participant C as Citation
+
+    User->>CG: generate(request, "APA")
+    activate CG
+
+    CG->>SR: validate()
+    activate SR
+    SR-->>CG: true
+    deactivate SR
+
+    alt type == DOI
+        CG->>CP: fetchMetadata(doi)
+        activate CP
+        CP-->>CG: metadata
+        deactivate CP
+    else type == ISBN
+        CG->>OLP: fetchMetadata(isbn)
+        activate OLP
+        OLP-->>CG: metadata
+        deactivate OLP
+    end
+
+    CG->>CS: formatCitation(metadata)
+    activate CS
+    CS-->>CG: formattedText
+    deactivate CS
+
+    CG->>C: new Citation(metadata, formattedText, style)
+
+    CG-->>User: citation
+    deactivate CG
+
+    User->>C: copyToClipboard()
+
+    opt authenticated
+        User->>CG: saveCitation(citation)
+    end
