@@ -78,14 +78,14 @@
 
 Обраний сценарій: "Зареєстрований користувач генерує цитату у форматі APA за DOI"
 
-Учасники: Користувач, CitationGenerator, SearchRequest, CrossrefProvider, OpenLibraryProvider, CitationStyle, Citation
+Учасники: Зареєстрований користувач, RegisteredUser, CitationGenerator, SearchRequest, CrossrefProvider, OpenLibraryProvider, WebScraperProvider, CitationStyle, Citation
 
 Елементи діаграми:
 - **Лінії життя** для всіх учасників
 - **Смуги активації** на CitationGenerator, SearchRequest, CrossrefProvider, CitationStyle
 - **Синхронні повідомлення** (суцільні стрілки) та **зворотні повідомлення** (пунктирні стрілки)
-- **Комбінований фрагмент alt** — маршрутизація за типом ідентифікатора (DOI vs ISBN)
-- **Комбінований фрагмент opt** — збереження цитати (тільки якщо автентифікований)
+- **Комбінований фрагмент alt** — маршрутизація за типом ідентифікатора (DOI vs ISBN vs URL)
+- **Комбінований фрагмент opt** — збереження цитати через RegisteredUser (тільки якщо автентифікований)
 
 ![Діаграма послідовності](../../diagrams/images/sequence.png)
 
@@ -101,7 +101,7 @@
 | FR-04 | UC-04: Скопіювати цитату | Citation | Крок 10 (copyToClipboard) |
 | FR-05 | UC-05: Зберегти / Історія | RegisteredUser, Citation | Крок 11 (saveCitation) |
 | FR-06 | UC-06: Керувати акаунтами | Admin, User, CitationStyle | Не показано (сценарій адміна) |
-| FR-07 | UC-07: Автентифікуватися | User, RegisteredUser | Не показано (сценарій автентифікації) |
+| FR-07 | UC-07: Автентифікуватися | User, RegisteredUser, Admin | Не показано (сценарій автентифікації) |
 
 Всі 7 функціональних вимог покриті прецедентами та класами. 5 з 7 вимог відображені в діаграмі послідовності (основний сценарій генерації цитати).
 

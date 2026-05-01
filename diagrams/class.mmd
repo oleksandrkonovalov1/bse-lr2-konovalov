@@ -7,11 +7,12 @@ classDiagram
     }
 
     class Guest {
-        +generateCitation(request: SearchRequest) Citation
+        +generateCitation(request: SearchRequest, style: CitationStyle) Citation
     }
 
     class RegisteredUser {
         -savedCitations: Citation[]
+        +generateCitation(request: SearchRequest, style: CitationStyle) Citation
         +saveCitation(citation: Citation) void
         +getHistory() Citation[]
         +login(email: string, password: string) boolean
@@ -21,6 +22,7 @@ classDiagram
         +manageUsers() User[]
         +manageStyles() CitationStyle[]
         +deleteUser(userId: string) boolean
+        +login(email: string, password: string) boolean
     }
 
     class Citation {
@@ -84,3 +86,5 @@ classDiagram
     Citation *-- "1" CitationStyle : composition
     RegisteredUser o-- "0..*" Citation : aggregation
     CitationGenerator --> SearchRequest : uses
+    Guest --> CitationGenerator : uses
+    RegisteredUser --> CitationGenerator : uses

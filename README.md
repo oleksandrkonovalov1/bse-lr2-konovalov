@@ -88,11 +88,12 @@ classDiagram
     }
 
     class Guest {
-        +generateCitation(request: SearchRequest) Citation
+        +generateCitation(request: SearchRequest, style: CitationStyle) Citation
     }
 
     class RegisteredUser {
         -savedCitations: Citation[]
+        +generateCitation(request: SearchRequest, style: CitationStyle) Citation
         +saveCitation(citation: Citation) void
         +getHistory() Citation[]
         +login(email: string, password: string) boolean
@@ -102,6 +103,7 @@ classDiagram
         +manageUsers() User[]
         +manageStyles() CitationStyle[]
         +deleteUser(userId: string) boolean
+        +login(email: string, password: string) boolean
     }
 
     class Citation {
@@ -165,6 +167,8 @@ classDiagram
     Citation *-- "1" CitationStyle : composition
     RegisteredUser o-- "0..*" Citation : aggregation
     CitationGenerator --> SearchRequest : uses
+    Guest --> CitationGenerator : uses
+    RegisteredUser --> CitationGenerator : uses
 ```
 
 ## Діаграма послідовності
@@ -174,15 +178,17 @@ classDiagram
 
 ```mermaid
 sequenceDiagram
-    actor User as Користувач
+    actor User as Зареєстрований користувач
+    participant RU as RegisteredUser
     participant CG as CitationGenerator
     participant SR as SearchRequest
     participant CP as CrossrefProvider
     participant OLP as OpenLibraryProvider
+    participant WSP as WebScraperProvider
     participant CS as CitationStyle
     participant C as Citation
 
-    User->>CG: generate(request, "APA")
+    User->>CG: generate(request, apaStyle)
     activate CG
 
     CG->>SR: validate()
@@ -200,6 +206,11 @@ sequenceDiagram
         activate OLP
         OLP-->>CG: metadata
         deactivate OLP
+    else type == URL
+        CG->>WSP: fetchMetadata(url)
+        activate WSP
+        WSP-->>CG: metadata
+        deactivate WSP
     end
 
     CG->>CS: formatCitation(metadata)
@@ -215,7 +226,7 @@ sequenceDiagram
     User->>C: copyToClipboard()
 
     opt authenticated
-        User->>CG: saveCitation(citation)
+        User->>RU: saveCitation(citation)
     end
 ```
 
@@ -229,7 +240,7 @@ sequenceDiagram
 | FR-04 | UC-04: Скопіювати цитату | Citation | Крок 10 (copyToClipboard) |
 | FR-05 | UC-05: Зберегти / Історія | RegisteredUser, Citation | Крок 11 (saveCitation) |
 | FR-06 | UC-06: Керувати акаунтами | Admin, User, CitationStyle | Не показано (сценарій адміна) |
-| FR-07 | UC-07: Автентифікуватися | User, RegisteredUser | Не показано (сценарій автентифікації) |
+| FR-07 | UC-07: Автентифікуватися | User, RegisteredUser, Admin | Не показано (сценарій автентифікації) |
 
 ## Встановлення
 

@@ -1,13 +1,15 @@
 sequenceDiagram
-    actor User as Користувач
+    actor User as Зареєстрований користувач
+    participant RU as RegisteredUser
     participant CG as CitationGenerator
     participant SR as SearchRequest
     participant CP as CrossrefProvider
     participant OLP as OpenLibraryProvider
+    participant WSP as WebScraperProvider
     participant CS as CitationStyle
     participant C as Citation
 
-    User->>CG: generate(request, "APA")
+    User->>CG: generate(request, apaStyle)
     activate CG
 
     CG->>SR: validate()
@@ -25,6 +27,11 @@ sequenceDiagram
         activate OLP
         OLP-->>CG: metadata
         deactivate OLP
+    else type == URL
+        CG->>WSP: fetchMetadata(url)
+        activate WSP
+        WSP-->>CG: metadata
+        deactivate WSP
     end
 
     CG->>CS: formatCitation(metadata)
@@ -40,5 +47,5 @@ sequenceDiagram
     User->>C: copyToClipboard()
 
     opt authenticated
-        User->>CG: saveCitation(citation)
+        User->>RU: saveCitation(citation)
     end
