@@ -42,19 +42,198 @@
 
 ## Діаграма прецедентів
 
-(буде додано)
+Виконав: Коновалов Олександр
+
+```mermaid
+flowchart LR
+    Guest(["Гість"])
+    User(["Зареєстрований користувач"])
+    Admin(["Адміністратор"])
+
+    subgraph system["Система бібліографічних посилань"]
+        UC01["UC-01: Ввести ідентифікатор"]
+        UC02["UC-02: Отримати метадані"]
+        UC03["UC-03: Згенерувати цитату"]
+        UC04["UC-04: Скопіювати цитату"]
+        UC05["UC-05: Зберегти цитату / Переглянути історію"]
+        UC06["UC-06: Керувати акаунтами та стилями"]
+        UC07["UC-07: Автентифікуватися"]
+    end
+
+    Guest --> UC01
+    Guest --> UC03
+    Guest --> UC04
+
+    User --> UC01
+    User --> UC03
+    User --> UC04
+    User --> UC05
+    User --> UC07
+
+    Admin --> UC06
+    Admin --> UC07
+
+    UC03 -.->|"include"| UC02
+    UC05 -.->|"extend"| UC03
+```
 
 ## Діаграма класів
 
-(буде додано)
+Виконав: Петреченко Руслан
+
+```mermaid
+classDiagram
+    class User {
+        <<abstract>>
+        #id: string
+        #email: string
+        +getRole() string
+    }
+
+    class Guest {
+        +generateCitation(request: SearchRequest) Citation
+    }
+
+    class RegisteredUser {
+        -savedCitations: Citation[]
+        +saveCitation(citation: Citation) void
+        +getHistory() Citation[]
+        +login(email: string, password: string) boolean
+    }
+
+    class Admin {
+        +manageUsers() User[]
+        +manageStyles() CitationStyle[]
+        +deleteUser(userId: string) boolean
+    }
+
+    class Citation {
+        -id: string
+        -rawMetadata: object
+        -formattedText: string
+        -style: CitationStyle
+        -createdAt: Date
+        +format(style: CitationStyle) string
+        +copyToClipboard() void
+    }
+
+    class CitationStyle {
+        -name: string
+        -template: string
+        +formatCitation(metadata: object) string
+    }
+
+    class SearchRequest {
+        -identifier: string
+        -type: IdentifierType
+        +validate() boolean
+        +getType() IdentifierType
+    }
+
+    class MetadataProvider {
+        <<interface>>
+        +fetchMetadata(identifier: string) object
+    }
+
+    class CrossrefProvider {
+        -apiUrl: string
+        +fetchMetadata(identifier: string) object
+    }
+
+    class OpenLibraryProvider {
+        -apiUrl: string
+        +fetchMetadata(identifier: string) object
+    }
+
+    class WebScraperProvider {
+        +fetchMetadata(url: string) object
+    }
+
+    class CitationGenerator {
+        -providers: MetadataProvider[]
+        -styles: CitationStyle[]
+        +generate(request: SearchRequest, style: CitationStyle) Citation
+        +resolveProvider(type: IdentifierType) MetadataProvider
+    }
+
+    User <|-- Guest
+    User <|-- RegisteredUser
+    User <|-- Admin
+    MetadataProvider <|.. CrossrefProvider
+    MetadataProvider <|.. OpenLibraryProvider
+    MetadataProvider <|.. WebScraperProvider
+    CitationGenerator o-- "1..*" MetadataProvider : aggregation
+    CitationGenerator --> CitationStyle : uses
+    CitationGenerator --> Citation : creates
+    Citation *-- "1" CitationStyle : composition
+    RegisteredUser o-- "0..*" Citation : aggregation
+    CitationGenerator --> SearchRequest : uses
+```
 
 ## Діаграма послідовності
 
-(буде додано)
+Виконав: Деревянко Іван
+
+Сценарій: Зареєстрований користувач генерує цитату у форматі APA за DOI
+
+```mermaid
+sequenceDiagram
+    actor User as Користувач
+    participant CG as CitationGenerator
+    participant SR as SearchRequest
+    participant CP as CrossrefProvider
+    participant OLP as OpenLibraryProvider
+    participant CS as CitationStyle
+    participant C as Citation
+
+    User->>CG: generate(request, "APA")
+    activate CG
+
+    CG->>SR: validate()
+    activate SR
+    SR-->>CG: true
+    deactivate SR
+
+    alt type == DOI
+        CG->>CP: fetchMetadata(doi)
+        activate CP
+        CP-->>CG: metadata
+        deactivate CP
+    else type == ISBN
+        CG->>OLP: fetchMetadata(isbn)
+        activate OLP
+        OLP-->>CG: metadata
+        deactivate OLP
+    end
+
+    CG->>CS: formatCitation(metadata)
+    activate CS
+    CS-->>CG: formattedText
+    deactivate CS
+
+    CG->>C: new Citation(metadata, formattedText, style)
+
+    CG-->>User: citation
+    deactivate CG
+
+    User->>C: copyToClipboard()
+
+    opt authenticated
+        User->>CG: saveCitation(citation)
+    end
+```
 
 ## Матриця трасовності
 
-(буде додано)
+| FR | Прецедент | Задіяні класи | Діаграма послідовності |
+|----|-----------|---------------|----------------------|
+| FR-01 | UC-01: Ввести ідентифікатор | SearchRequest | Кроки 1-3 (validate) |
+| FR-02 | UC-02: Отримати метадані | MetadataProvider, CrossrefProvider, OpenLibraryProvider, WebScraperProvider | Кроки 4-5 (fetchMetadata) |
+| FR-03 | UC-03: Згенерувати цитату | CitationGenerator, CitationStyle, Citation | Кроки 6-9 (formatCitation, create) |
+| FR-04 | UC-04: Скопіювати цитату | Citation | Крок 10 (copyToClipboard) |
+| FR-05 | UC-05: Зберегти / Історія | RegisteredUser, Citation | Крок 11 (saveCitation) |
+| FR-06 | UC-06: Керувати акаунтами | Admin, User, CitationStyle | Не показано (сценарій адміна) |
+| FR-07 | UC-07: Автентифікуватися | User, RegisteredUser | Не показано (сценарій автентифікації) |
 
 ## Встановлення
 
